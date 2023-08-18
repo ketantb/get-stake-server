@@ -22,14 +22,18 @@ app.get('/', (req, res) => {
 const userRouter = require('./routes/userRoutes')
 app.use('/user', userRouter);
 
-db.sequelize.sync({ alter: true }).then(() => {
-    app.listen(port, (err) => {
-        console.log(`app listening to port no ${port}`);
-        if (err) {
-            console.log(err);
-        }
-    });
-});
+db.sequelize.sync({ alter: true })
+    .then(() => {
+        app.listen(port, (err) => {
+            console.log(`app listening to port no ${port}`);
+            if (err) {
+                console.log(err);
+            }
+        });
+    })
+    .catch((err) => {
+        console.log(err);
+    })
 
 
 // const db = mysql.createConnection(
