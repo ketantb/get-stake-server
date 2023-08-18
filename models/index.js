@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
 const sequelize = new Sequelize('getstake', 'ketantb', 'ketantb', {
-    host: 'localhost',
+    // host: 'localhost',
     logging: false,
     dialect: 'mysql'
 })
