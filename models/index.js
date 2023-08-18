@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 
 const sequelize = new Sequelize('getstake', 'ketantb', 'ketantb', {
     host: '127.0.0.1',
-    port: 3306,
+    port: '/var/run/mysqld/mysqld.sock',
     logging: false,
     dialect: 'mysql'
 })
