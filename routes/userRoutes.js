@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const db = require('../models');
-const User = db.user;
+const User = require("../models/userModel");
+const jwt = require('jsonwebtoken')
+require('dotenv').config();
+
 
 function sendOtpMail(email, otp) {
     //send email of booking confirmation
@@ -10,22 +12,17 @@ function sendOtpMail(email, otp) {
     let transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: "harshadaa1997@gmail.com", //process.env.NODEMAILER_EMAIL,
-            pass: "pvrwfvhuibgplogr", //req.body.email,
+            user: process.env.NODEMAILER_EMAIL,
+            pass: process.env.NODEMAILER_EMAIL_PASS,
         },
     });
 
     let mailOptions = {
         from: "harshadaa1997@gmail.com", //process.env.NODEMAILER_EMAIL,
         to: email,
-        subject: "OTP verificaion for Get Stake",
-        // text: `
-        //         Hello from Get Stake,
-        //         Verification Code=${otp}
-        //         Thanks.
-        //         `,
+        subject: "OTP verificaion for Stake",
         html: `
-            <div>
+        <div>
             <h1 style="font-size:24px">Hello From Get Stake<h1>
             <p style="font-size:18px; margin-top:50px;">Verification Code 
             <span style="padding:25px; background-color:#5bf1ff4a; font-size:36px; font-weight:900">
@@ -36,7 +33,7 @@ function sendOtpMail(email, otp) {
             <img src = "https://getstake.com/assets/stake-logo.svg" 
              style="width:100px;height:100px"/>
             </section>
-            </div>`,
+        </div>`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -51,40 +48,98 @@ function sendOtpMail(email, otp) {
 
 }
 
+//ROUTE TO GENERATE OTP AND SEND IT TO USER NUMBER THROUGHT SMS
 router.post('/registration', async (req, res) => {
     try {
-        const userData = req.body;
-
-        //edge case if user not verified =>
-        const userFoundButNotVerified = await User.findOne({ where: { email: userData.email, verified: false } });
-        if (userFoundButNotVerified) {
-            console.log("userFoundButNotVerified => ", userFoundButNotVerified);
-            sendOtpMail(userFoundButNotVerified.email, userFoundButNotVerified.otp);
-            return res.status(200).json({ success: false, message: 'email not verified' });
+        const { firstName, lastName, email, userType } = req.body
+        const emailFoundButNotVerified = await User.findOne({ email, isVerified: false })
+        if (emailFoundButNotVerified) {
+            console.log("emailFoundButNotVerified => ", emailFoundButNotVerified)
+            sendOtpMail(emailFoundButNotVerified.email, emailFoundButNotVerified.otp)
+            return res.status(200).json({ success: false, message: 'user found but not verified' })
         }
-
-        //edge case if email already in use =>
-        const emailAlreadyInUse = await User.findOne({ where: { email: userData.email } });
-        if (emailAlreadyInUse) {
-            console.log("emailAlreadyInUse => ", emailAlreadyInUse);
-            return res.status(200).json({ success: false, message: 'email already in use' });
+        const emailFound = await User.findOne({ email })
+        if (emailFound) {
+            console.log(emailFound)
+            return res.status(500).json({ success: false, message: 'email already in use' })
         }
-        const otp = parseInt(1000 + Math.random() * 9999).toString().substring(0, 4);
-        userData.otp = otp;
-        let password = userData.password
-        const saltRounds = 10
-        const salt = await bcrypt.genSalt(saltRounds)
-        const hashedPassword = await bcrypt.hash(password, salt)
-        password = hashedPassword
-        userData.password = password;
-        const registeredData = await User.create(userData);
-        sendOtpMail(userData.email, otp);
-        return res.status(200).json({ success: true, message: registeredData })
+        else {
+            const otp = Math.floor(1000 + Math.random() * 9999).toString().substr(0, 4);
+            let password = req.body.password
+            const saltRounds = 10
+            const salt = await bcrypt.genSalt(saltRounds)
+            const hashedPassword = await bcrypt.hash(password, salt)
+            password = hashedPassword
+            const userData = { firstName, lastName, email, password, otp: otp, userType }
+            const user = await User.create(userData)
+            sendOtpMail(email, otp)
+            return res.status(200).json({ success: true })
+        }
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json({ success: false, error: err });
+        console.log(err)
+        res.status(500).json(err)
     }
 })
 
-module.exports = router;
+
+
+// ROUTER TO VERIFY OTP
+// WHEN YOU ENTER OTP AND SUBMIT
+router.post('/verify-otp', async (req, resp) => {
+    try {
+        const email = req.body.email
+        const otp = req.body.otp
+        const user = await User.findOne({ email, otp });
+
+        // console.log(user)
+        if (user) {
+            user.isVerified = true
+            await user.save()
+            console.log(user)
+            resp.json({ sucess: true, message: 'Email verified successfully' })
+        }
+        else {
+            resp.json({ success: false, message: 'Invalid OTP' })
+        }
+    }
+    catch (err) {
+        resp.json({ success: false, message: err })
+    }
+})
+
+
+
+//SIGN-IN ROUTE 
+router.post('/sign-in', async (req, res) => {
+    try {
+        const { email, password } = req.body
+        console.log(email)
+        const userData = await User.findOne({ email: email })
+        console.log('userData => ', userData)
+        if (!userData || email != userData.email) {
+            console.log("Invalid Email or Password")
+            return res.status(400).send("Invalid Email or Password")
+        }
+        if (userData) {
+            const passwordMatch = await bcrypt.compare(password, userData.password)
+            if (passwordMatch) {
+                const token = jwt.sign({ _id: userData._id }, process.env.SECRET_KEY, { expiresIn: '24h' })
+
+                res.status(200).send({
+                    success: true,
+                    message: 'Signin Successful',
+                    token
+                });
+            }
+            else {
+                return res.status(400).send("Invalid Password")
+            }
+        }
+    }
+    catch (err) {
+        console.log(err)
+    }
+})
+
+module.exports = router

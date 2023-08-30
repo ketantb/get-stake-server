@@ -1,14 +1,15 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 const cors = require('cors');
-const db = require('./models')
 const app = express();
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors());
 
-const port = process.env.PORT || 8000;
+require("./connectionDb")
+
+const port = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
     try {
@@ -19,38 +20,13 @@ app.get('/', (req, res) => {
     }
 })
 
-const userRouter = require('./routes/userRoutes')
-app.use('/user', userRouter);
+const userRoutes = require('./routes/userRoutes');
+app.use('/user', userRoutes);
 
-db.sequelize.sync({ alter: true })
-    .then(() => {
-        app.listen(port, (err) => {
-            console.log(`app listening to port no ${port}`);
-            if (err) {
-                console.log(err);
-            }
-        });
-    })
-    .catch((err) => {
-        console.log(err);
-    })
+const agriRoutes = require('./routes/agriLandRoutes');
+app.use('/agri', agriRoutes);
 
+const apartmentRoutes = require('./routes/apartmentRoutes');
+app.use('/apartment', apartmentRoutes);
 
-// const db = mysql.createConnection(
-//     {
-//         host: '127.0.0.1',
-//         user: 'ketantb',
-//         password: 'ketantb',
-//         database: 'getstake'
-//     }
-// )
-
-// db.connect((err) => {
-//     if (err) {
-//         console.log('unable to connect to DB');
-//         console.log(err);
-//     }
-//     else {
-//         console.log('MySQL connection successfull');
-//     }
-// })
+app.listen(port, () => console.log("Server is running on port:", port));
