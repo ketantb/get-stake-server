@@ -52,7 +52,7 @@ const ApartmentSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   postedOn: String,
   uniqueId: { type: String },
-  sellerId: Schema.Types.ObjectId,
+  sellerId: mongoose.Schema.Types.ObjectId,
 });
 
 module.exports = mongoose.model("apartment_products", ApartmentSchema);
