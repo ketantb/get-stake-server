@@ -20,8 +20,11 @@ app.use('/agri', agriRoutes);
 const apartmentRoutes = require('./routes/apartmentRoutes');
 app.use('/apartment', apartmentRoutes);
 
-const farmhouseRoutes = require('./routes/apartmentRoutes');
+const farmhouseRoutes = require('./routes/farmhouserRoutes');
 app.use('/farmhouse', farmhouseRoutes);
+
+const landRoutes = require('./routes/landRoutes');
+app.use('/land', farmhouseRoutes);
 
 const resortRoutes = require('./routes/resortRoutes');
 app.use('/resort', resortRoutes);
@@ -30,7 +33,7 @@ const shopRoutes = require('./routes/shopRoutes');
 app.use('/shop', shopRoutes);
 
 const villaRoutes = require('./routes/villaRoutes');
-app.use('/resort', villaRoutes);
+app.use('/villa', villaRoutes);
 
 app.get('/', (req, res) => {
     try {
