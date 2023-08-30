@@ -15,7 +15,7 @@ const userRoutes = require('./routes/userRoutes');
 app.use('/user', userRoutes);
 
 const agriRoutes = require('./routes/agriLandRoutes');
-app.use('/agri', agriRoutes);
+app.use('/agriculture-land', agriRoutes);
 
 const apartmentRoutes = require('./routes/apartmentRoutes');
 app.use('/apartment', apartmentRoutes);
