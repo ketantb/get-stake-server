@@ -1,28 +1,28 @@
 const router = require("express").Router();
 const moment = require("moment");
 
-const Agri = require("../models/agriLandModel");
+const Villa = require("../models/villaModel");
 // const userMiddleware = require("../midleware/userMiddlware");
 
 //ADD NEW PRODUCT
-
-// router.post("/post-form", userMiddleware, async (req, resp) => {
+// router.post("/villa-form", userMiddleware, async (req, resp) => {
 router.post("/post-form", async (req, resp) => {
     console.log("token is from post form", req.sellerId);
     console.log(req.body);
     const date = moment().format("DD/MM/YYYY");
     try {
-        const newAgri = await Agri.create({
+        //images
+        const newVilla = await Villa.create({
             ...req.body,
             postedOn: date,
             sellerId: req.sellerId,
         });
         // image: req.files.map(file => file.filename)
-        console.log(newAgri);
+        console.log(newVilla);
         resp.json({
             success: true,
             message: "Data created successfully",
-            Agri: newAgri,
+            villa: newVilla,
         });
     } catch (err) {
         resp.json({
@@ -34,9 +34,9 @@ router.post("/post-form", async (req, resp) => {
 //To fetch all listings no login required(for customer purpose)
 router.get("/get-all", async (req, resp) => {
     try {
-        let allAgrisList = await Agri.find();
-        if (allAgrisList) {
-            const verifiedPropertyList = allAgrisList
+        let allvillaList = await Villa.find();
+        if (allvillaList) {
+            const verifiedPropertyList = allvillaList
                 .filter((property) => {
                     if (property.isVerified) {
                         return property;

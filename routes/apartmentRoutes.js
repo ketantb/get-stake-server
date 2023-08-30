@@ -6,7 +6,7 @@ const Apartment = require("../models/apartmentModel");
 
 //ADD NEW PRODUCT
 // router.post("/apartment-form", userMiddleware, async (req, resp) => {
-router.post("/apartment-form", async (req, resp) => {
+router.post("/post-form", async (req, resp) => {
   console.log(req.sellerId);
   const date = moment().format("DD/MM/YYYY");
   try {
@@ -31,7 +31,7 @@ router.post("/apartment-form", async (req, resp) => {
 });
 
 //To fetch all listings no login required(for customer purpose)
-router.get("/listing-all-Apartment", async (req, resp) => {
+router.get("/get-all", async (req, resp) => {
   try {
     let allApartmentsList = await Apartment.find();
     if (allApartmentsList) {
