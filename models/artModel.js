@@ -18,7 +18,7 @@ const artSchema = new mongoose.Schema({
   additionalDetails: { type: String },
   imgArr: [{ type: String }],
   propertyType: { type: String, default: "art" },
-  isVerified: { type: Boolean, default: false },
+  isVerified: { type: Boolean, default: true },
   postedOn: String,
   sellerId: mongoose.Schema.Types.ObjectId,
 });

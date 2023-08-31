@@ -48,7 +48,7 @@ const VillaSchema = new mongoose.Schema({
   whyInvestHere: [{ type: String }],
   additionalDetails: { type: String },
   // actions and status
-  isVerified: { type: Boolean, default: false },
+  isVerified: { type: Boolean, default: true },
   postedOn: String,
   uniqueId: String,
   sellerId: Schema.Types.ObjectId,
